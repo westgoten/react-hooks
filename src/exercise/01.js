@@ -4,12 +4,7 @@
 import * as React from 'react'
 
 function Greeting() {
-  // 💣 delete this variable declaration and replace it with a React.useState call
-  const name = ''
-
-  function handleChange(event) {
-    // 🐨 update the name here based on event.target.value
-  }
+  const [name, setName] = React.useState('')
 
   return (
     <div>
@@ -20,6 +15,10 @@ function Greeting() {
       {name ? <strong>Hello {name}</strong> : 'Please type your name'}
     </div>
   )
+
+  function handleChange(event) {
+    setName(event.target.value)
+  }
 }
 
 function App() {
