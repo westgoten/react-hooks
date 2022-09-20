@@ -4,7 +4,7 @@
 import * as React from 'react'
 
 function Greeting({initialName = ''}) {
-  const [name, setName] = useLocalStorageState(initialName, 'name')
+  const [name, setName, error] = useLocalStorageState(initialName, 'name')
 
   return (
     <div>
@@ -13,6 +13,8 @@ function Greeting({initialName = ''}) {
         <input value={name} onChange={handleChange} id="name" />
       </form>
       {name ? <strong>Hello {name}</strong> : 'Please type your name'}
+      <br />
+      {error && <span style={{color: 'red'}}>{error}</span>}
     </div>
   )
 
@@ -21,18 +23,29 @@ function Greeting({initialName = ''}) {
   }
 }
 
-export const useLocalStorageState = (initialState = '', key = 'state') => {
+export const useLocalStorageState = (initialState, key = 'state') => {
   const [state, setState] = React.useState(getInitialState)
+  const [error, setError] = React.useState(null)
 
   React.useEffect(() => {
-    localStorage.setItem(key, state)
+    try {
+      const stateJSON = JSON.stringify(state)
+      localStorage.setItem(key, stateJSON)
+    } catch {
+      setError('Houve um erro ao salvar os dados')
+    }
   }, [state, key])
 
   function getInitialState() {
-    return localStorage.getItem(key) ?? initialState
+    try {
+      const storedItemJSON = localStorage.getItem(key)
+      return storedItemJSON ? JSON.parse(storedItemJSON) : initialState
+    } catch {
+      return initialState
+    }
   }
 
-  return [state, setState]
+  return [state, setState, error]
 }
 
 function App() {
