@@ -63,7 +63,17 @@ function Game() {
         <div>{calculateStatus(winner, currentSquares, nextValue)}</div>
         <ol>
           {moves.map((move, index) => (
-            <li key={index}>Current step #{index + 1}</li>
+            <HistoryStep
+              key={index}
+              step={index}
+              currentStep={gameHistory.step}
+              onClick={() =>
+                setGameHistory(oldState => ({
+                  history: oldState.history.map(squares => squares.slice()),
+                  step: index,
+                }))
+              }
+            />
           ))}
         </ol>
       </div>
@@ -74,7 +84,13 @@ function Game() {
     const chosenSquare = currentSquares[square]
     if (chosenSquare === null && !winner) {
       setGameHistory(oldState => {
-        const newStateHistory = oldState.history.map(squares => squares.slice())
+        const transientStateHistory = oldState.history.slice(
+          0,
+          oldState.step + 1,
+        )
+        const newStateHistory = transientStateHistory.map(squares =>
+          squares.slice(),
+        )
         const squares = newStateHistory[oldState.step]
         const newSquares = squares.slice()
         newSquares[square] = nextValue
@@ -135,7 +151,21 @@ function calculateWinner(squares) {
   return null
 }
 
-function HistoryStep({step, currentStep, onClick}) {}
+function HistoryStep({step, currentStep, onClick}) {
+  return (
+    <li>
+      <button onClick={onClick} disabled={step === currentStep}>
+        {getButtonLabel()}
+      </button>
+    </li>
+  )
+
+  function getButtonLabel() {
+    return `Go to ${step === 0 ? 'game start' : 'move #' + step}${
+      step === currentStep ? ' (current)' : ''
+    }`
+  }
+}
 
 function App() {
   return <Game />

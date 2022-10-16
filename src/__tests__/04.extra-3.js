@@ -51,7 +51,7 @@ test('can play a game of tic tac toe', async () => {
   alfredTip(
     () =>
       expect(
-        JSON.parse(window.localStorage.getItem('tic-tac-toe:history')),
+        JSON.parse(window.localStorage.getItem('game-history')).history,
       ).toEqual(
         // prettier-ignore
         [
@@ -82,7 +82,7 @@ test('can play a game of tic tac toe', async () => {
   alfredTip(
     () =>
       expect(
-        JSON.parse(window.localStorage.getItem('tic-tac-toe:history')),
+        JSON.parse(window.localStorage.getItem('game-history')).history,
       ).toEqual(
         // prettier-ignore
         [

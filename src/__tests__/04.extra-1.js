@@ -49,7 +49,7 @@ test('can play a game of tic tac toe', async () => {
 
   alfredTip(
     () =>
-      expect(JSON.parse(window.localStorage.getItem('squares'))).toEqual(
+      expect(getSquaresFromLocalStorage()).toEqual(
         // prettier-ignore
         [
           'X', 'O', 'X',
@@ -60,3 +60,8 @@ test('can play a game of tic tac toe', async () => {
     'Make sure that the "squares" localStorage item is updated with the JSON.stringified squares',
   )
 })
+
+function getSquaresFromLocalStorage() {
+  const state = JSON.parse(window.localStorage.getItem('game-history'))
+  return state.history[state.step]
+}
