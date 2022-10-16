@@ -154,7 +154,7 @@ function calculateWinner(squares) {
 function HistoryStep({step, currentStep, onClick}) {
   return (
     <li>
-      <button onClick={onClick} disabled={step === currentStep}>
+      <button onClick={onClick} disabled={isCurrentStep()}>
         {getButtonLabel()}
       </button>
     </li>
@@ -162,8 +162,12 @@ function HistoryStep({step, currentStep, onClick}) {
 
   function getButtonLabel() {
     return `Go to ${step === 0 ? 'game start' : 'move #' + step}${
-      step === currentStep ? ' (current)' : ''
+      isCurrentStep() ? ' (current)' : ''
     }`
+  }
+
+  function isCurrentStep() {
+    return step === currentStep
   }
 }
 
