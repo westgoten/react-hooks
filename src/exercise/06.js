@@ -3,7 +3,12 @@
 
 import * as React from 'react'
 
-import {PokemonForm, PokemonDataView, fetchPokemon} from '../pokemon'
+import {
+  PokemonForm,
+  PokemonDataView,
+  fetchPokemon,
+  PokemonInfoFallback,
+} from '../pokemon'
 
 function PokemonInfo({pokemon}) {
   return <PokemonDataView pokemon={pokemon} />
@@ -11,13 +16,21 @@ function PokemonInfo({pokemon}) {
 
 function App() {
   const [pokemon, setPokemon] = React.useState()
+  const [isLoading, setLoading] = React.useState(false)
+  const [pokemonName, setPokemonName] = React.useState()
 
   async function handleSubmit(newPokemonName) {
     try {
-      const newPokemon = await fetchPokemon(newPokemonName)
-      setPokemon(newPokemon)
+      if (newPokemonName !== pokemonName) {
+        setLoading(true)
+        setPokemonName(newPokemonName)
+        const newPokemon = await fetchPokemon(newPokemonName)
+        setPokemon(newPokemon)
+      }
     } catch (error) {
       console.error(error)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -26,7 +39,13 @@ function App() {
       <PokemonForm onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        {pokemon ? <PokemonInfo pokemon={pokemon} /> : 'Submit a pokemon'}
+        {isLoading ? (
+          <PokemonInfoFallback name={pokemonName} />
+        ) : pokemon ? (
+          <PokemonInfo pokemon={pokemon} />
+        ) : (
+          'Submit a pokemon'
+        )}
       </div>
     </div>
   )
