@@ -16,19 +16,21 @@ function PokemonInfo({pokemon}) {
 
 function App() {
   const [pokemon, setPokemon] = React.useState()
-  const [isLoading, setLoading] = React.useState(false)
   const [pokemonName, setPokemonName] = React.useState()
+  const [isLoading, setLoading] = React.useState(false)
+  const [error, setError] = React.useState(null)
 
   async function handleSubmit(newPokemonName) {
     try {
       if (newPokemonName !== pokemonName) {
         setLoading(true)
+        setError(null)
         setPokemonName(newPokemonName)
         const newPokemon = await fetchPokemon(newPokemonName)
         setPokemon(newPokemon)
       }
     } catch (error) {
-      console.error(error)
+      setError(error)
     } finally {
       setLoading(false)
     }
@@ -41,6 +43,11 @@ function App() {
       <div className="pokemon-info">
         {isLoading ? (
           <PokemonInfoFallback name={pokemonName} />
+        ) : error ? (
+          <div role="alert">
+            There was an error:{' '}
+            <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+          </div>
         ) : pokemon ? (
           <PokemonInfo pokemon={pokemon} />
         ) : (
