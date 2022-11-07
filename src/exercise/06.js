@@ -22,23 +22,23 @@ function PokemonInfo({pokemon}) {
 }
 
 function App() {
-  const [pokemon, setPokemon] = React.useState()
   const [pokemonName, setPokemonName] = React.useState()
-  const [error, setError] = React.useState(null)
-  const [status, setStatus] = React.useState(requestStatus.IDLE)
+  const [state, setState] = React.useState({
+    status: requestStatus.IDLE,
+    pokemon: null,
+    error: null,
+  })
 
   async function handleSubmit(newPokemonName) {
     try {
       if (newPokemonName !== pokemonName) {
-        setStatus(requestStatus.PENDING)
+        setState({status: requestStatus.PENDING})
         setPokemonName(newPokemonName)
-        const newPokemon = await fetchPokemon(newPokemonName)
-        setPokemon(newPokemon)
-        setStatus(requestStatus.RESOLVED)
+        const pokemon = await fetchPokemon(newPokemonName)
+        setState({status: requestStatus.RESOLVED, pokemon})
       }
     } catch (error) {
-      setError(error)
-      setStatus(requestStatus.REJECTED)
+      setState({status: requestStatus.REJECTED, error})
     }
   }
 
@@ -47,15 +47,15 @@ function App() {
       <PokemonForm onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        {status === requestStatus.PENDING ? (
+        {state.status === requestStatus.PENDING ? (
           <PokemonInfoFallback name={pokemonName} />
-        ) : status === requestStatus.REJECTED ? (
+        ) : state.status === requestStatus.REJECTED ? (
           <div role="alert">
             There was an error:{' '}
-            <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
+            <pre style={{whiteSpace: 'normal'}}>{state.error.message}</pre>
           </div>
-        ) : status === requestStatus.RESOLVED ? (
-          <PokemonInfo pokemon={pokemon} />
+        ) : state.status === requestStatus.RESOLVED ? (
+          <PokemonInfo pokemon={state.pokemon} />
         ) : (
           'Submit a pokemon'
         )}
