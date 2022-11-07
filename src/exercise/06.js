@@ -10,6 +10,13 @@ import {
   PokemonInfoFallback,
 } from '../pokemon'
 
+const requestStatus = {
+  IDLE: 'idle',
+  PENDING: 'pending',
+  RESOLVED: 'resolved',
+  REJECTED: 'rejected',
+}
+
 function PokemonInfo({pokemon}) {
   return <PokemonDataView pokemon={pokemon} />
 }
@@ -17,22 +24,21 @@ function PokemonInfo({pokemon}) {
 function App() {
   const [pokemon, setPokemon] = React.useState()
   const [pokemonName, setPokemonName] = React.useState()
-  const [isLoading, setLoading] = React.useState(false)
   const [error, setError] = React.useState(null)
+  const [status, setStatus] = React.useState(requestStatus.IDLE)
 
   async function handleSubmit(newPokemonName) {
     try {
       if (newPokemonName !== pokemonName) {
-        setLoading(true)
-        setError(null)
+        setStatus(requestStatus.PENDING)
         setPokemonName(newPokemonName)
         const newPokemon = await fetchPokemon(newPokemonName)
         setPokemon(newPokemon)
+        setStatus(requestStatus.RESOLVED)
       }
     } catch (error) {
       setError(error)
-    } finally {
-      setLoading(false)
+      setStatus(requestStatus.REJECTED)
     }
   }
 
@@ -41,14 +47,14 @@ function App() {
       <PokemonForm onSubmit={handleSubmit} />
       <hr />
       <div className="pokemon-info">
-        {isLoading ? (
+        {status === requestStatus.PENDING ? (
           <PokemonInfoFallback name={pokemonName} />
-        ) : error ? (
+        ) : status === requestStatus.REJECTED ? (
           <div role="alert">
             There was an error:{' '}
             <pre style={{whiteSpace: 'normal'}}>{error.message}</pre>
           </div>
-        ) : pokemon ? (
+        ) : status === requestStatus.RESOLVED ? (
           <PokemonInfo pokemon={pokemon} />
         ) : (
           'Submit a pokemon'
