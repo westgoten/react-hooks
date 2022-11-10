@@ -43,7 +43,7 @@ function App() {
   }
 
   return (
-    <ErrorBoundary Fallback={ErrorFallback}>
+    <ErrorBoundary Fallback={ErrorFallback} onRetry={onRetry}>
       <div className="pokemon-info-app">
         <PokemonForm onSubmit={handleSubmit} />
         <hr />
@@ -61,6 +61,10 @@ function App() {
       </div>
     </ErrorBoundary>
   )
+
+  function onRetry() {
+    setState({status: requestStatus.IDLE})
+  }
 }
 
 function ThrowError(error) {
@@ -71,7 +75,11 @@ function ThrowError(error) {
 }
 
 class ErrorBoundary extends React.Component {
-  state = {error: null}
+  constructor(props) {
+    super(props)
+    this.state = {error: null}
+    this.onRetry = this.onRetry.bind(this)
+  }
 
   static getDerivedStateFromError(error) {
     return {error}
@@ -82,23 +90,29 @@ class ErrorBoundary extends React.Component {
     console.log('ErrorInfo:', errorInfo)
   }
 
+  onRetry() {
+    this.props.onRetry()
+    this.setState({error: null})
+  }
+
   render() {
     const {Fallback} = this.props
     if (this.state.error) {
-      return <Fallback error={this.state.error.error} />
+      return <Fallback error={this.state.error.error} onRetry={this.onRetry} />
     }
 
     return this.props.children
   }
 }
 
-function ErrorFallback({error}) {
+function ErrorFallback({error, onRetry}) {
   return (
     <div role="alert">
       There was an error:{' '}
       <pre style={{whiteSpace: 'normal'}}>
         {error ?? 'Oops, something went wrong'}
       </pre>
+      <button onClick={onRetry}>Try again</button>
     </div>
   )
 }
