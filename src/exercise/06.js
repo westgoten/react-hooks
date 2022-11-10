@@ -43,23 +43,62 @@ function App() {
   }
 
   return (
-    <div className="pokemon-info-app">
-      <PokemonForm onSubmit={handleSubmit} />
-      <hr />
-      <div className="pokemon-info">
-        {state.status === requestStatus.PENDING ? (
-          <PokemonInfoFallback name={pokemonName} />
-        ) : state.status === requestStatus.REJECTED ? (
-          <div role="alert">
-            There was an error:{' '}
-            <pre style={{whiteSpace: 'normal'}}>{state.error.message}</pre>
-          </div>
-        ) : state.status === requestStatus.RESOLVED ? (
-          <PokemonInfo pokemon={state.pokemon} />
-        ) : (
-          'Submit a pokemon'
-        )}
+    <ErrorBoundary Fallback={ErrorFallback}>
+      <div className="pokemon-info-app">
+        <PokemonForm onSubmit={handleSubmit} />
+        <hr />
+        <div className="pokemon-info">
+          {state.status === requestStatus.PENDING ? (
+            <PokemonInfoFallback name={pokemonName} />
+          ) : state.status === requestStatus.REJECTED ? (
+            <ThrowError error={state.error.message} />
+          ) : state.status === requestStatus.RESOLVED ? (
+            <PokemonInfo pokemon={state.pokemon} />
+          ) : (
+            'Submit a pokemon'
+          )}
+        </div>
       </div>
+    </ErrorBoundary>
+  )
+}
+
+function ThrowError(error) {
+  if (error) {
+    throw error
+  }
+  return null
+}
+
+class ErrorBoundary extends React.Component {
+  state = {error: null}
+
+  static getDerivedStateFromError(error) {
+    return {error}
+  }
+
+  componentDidCatch(error, errorInfo) {
+    console.log('Error:', error)
+    console.log('ErrorInfo:', errorInfo)
+  }
+
+  render() {
+    const {Fallback} = this.props
+    if (this.state.error) {
+      return <Fallback error={this.state.error.error} />
+    }
+
+    return this.props.children
+  }
+}
+
+function ErrorFallback({error}) {
+  return (
+    <div role="alert">
+      There was an error:{' '}
+      <pre style={{whiteSpace: 'normal'}}>
+        {error ?? 'Oops, something went wrong'}
+      </pre>
     </div>
   )
 }
