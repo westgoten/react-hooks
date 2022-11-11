@@ -2,6 +2,7 @@
 // http://localhost:3000/isolated/exercise/06.js
 
 import * as React from 'react'
+import {ErrorBoundary} from 'react-error-boundary'
 
 import {
   PokemonForm,
@@ -43,7 +44,14 @@ function App() {
   }
 
   return (
-    <ErrorBoundary Fallback={ErrorFallback} onRetry={onRetry}>
+    <ErrorBoundary
+      FallbackComponent={ErrorFallback}
+      onReset={onRetry}
+      onError={(error, info) => {
+        console.log('Error:', error)
+        console.log('ErrorInfo:', info)
+      }}
+    >
       <div className="pokemon-info-app">
         <PokemonForm onSubmit={handleSubmit} />
         <hr />
@@ -51,7 +59,7 @@ function App() {
           {state.status === requestStatus.PENDING ? (
             <PokemonInfoFallback name={pokemonName} />
           ) : state.status === requestStatus.REJECTED ? (
-            <ThrowError error={state.error.message} />
+            <ThrowError error={state.error} />
           ) : state.status === requestStatus.RESOLVED ? (
             <PokemonInfo pokemon={state.pokemon} />
           ) : (
@@ -74,45 +82,14 @@ function ThrowError(error) {
   return null
 }
 
-class ErrorBoundary extends React.Component {
-  constructor(props) {
-    super(props)
-    this.state = {error: null}
-    this.onRetry = this.onRetry.bind(this)
-  }
-
-  static getDerivedStateFromError(error) {
-    return {error}
-  }
-
-  componentDidCatch(error, errorInfo) {
-    console.log('Error:', error)
-    console.log('ErrorInfo:', errorInfo)
-  }
-
-  onRetry() {
-    this.props.onRetry()
-    this.setState({error: null})
-  }
-
-  render() {
-    const {Fallback} = this.props
-    if (this.state.error) {
-      return <Fallback error={this.state.error.error} onRetry={this.onRetry} />
-    }
-
-    return this.props.children
-  }
-}
-
-function ErrorFallback({error, onRetry}) {
+function ErrorFallback({error, resetErrorBoundary}) {
   return (
     <div role="alert">
       There was an error:{' '}
       <pre style={{whiteSpace: 'normal'}}>
-        {error ?? 'Oops, something went wrong'}
+        {error.error.message ?? 'Oops, something went wrong'}
       </pre>
-      <button onClick={onRetry}>Try again</button>
+      <button onClick={resetErrorBoundary}>Try again</button>
     </div>
   )
 }
