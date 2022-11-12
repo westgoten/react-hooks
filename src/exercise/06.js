@@ -18,8 +18,13 @@ const requestStatus = {
   REJECTED: 'rejected',
 }
 
-function PokemonInfo({pokemon}) {
-  return <PokemonDataView pokemon={pokemon} />
+function PokemonInfo({requestState}) {
+  const {status, pokemon, error} = requestState
+  return status === requestStatus.RESOLVED ? (
+    <PokemonDataView pokemon={pokemon} />
+  ) : (
+    <ThrowError error={error} />
+  )
 }
 
 function App() {
@@ -44,30 +49,29 @@ function App() {
   }
 
   return (
-    <ErrorBoundary
-      FallbackComponent={ErrorFallback}
-      onReset={onRetry}
-      onError={(error, info) => {
-        console.log('Error:', error)
-        console.log('ErrorInfo:', info)
-      }}
-    >
-      <div className="pokemon-info-app">
-        <PokemonForm onSubmit={handleSubmit} />
-        <hr />
-        <div className="pokemon-info">
-          {state.status === requestStatus.PENDING ? (
-            <PokemonInfoFallback name={pokemonName} />
-          ) : state.status === requestStatus.REJECTED ? (
-            <ThrowError error={state.error} />
-          ) : state.status === requestStatus.RESOLVED ? (
-            <PokemonInfo pokemon={state.pokemon} />
-          ) : (
-            'Submit a pokemon'
-          )}
-        </div>
+    <div className="pokemon-info-app">
+      <PokemonForm onSubmit={handleSubmit} />
+      <hr />
+      <div className="pokemon-info">
+        {state.status === requestStatus.PENDING ? (
+          <PokemonInfoFallback name={pokemonName} />
+        ) : state.status === requestStatus.RESOLVED ||
+          state.status === requestStatus.REJECTED ? (
+          <ErrorBoundary
+            FallbackComponent={ErrorFallback}
+            onReset={onRetry}
+            onError={(error, info) => {
+              console.log('Error:', error)
+              console.log('ErrorInfo:', info)
+            }}
+          >
+            <PokemonInfo requestState={state} />
+          </ErrorBoundary>
+        ) : (
+          'Submit a pokemon'
+        )}
       </div>
-    </ErrorBoundary>
+    </div>
   )
 
   function onRetry() {
